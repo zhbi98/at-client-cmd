@@ -1,0 +1,9 @@
+{
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "${workspaceFolder}/output",
+            "binaryPath": "${workspaceFolder}/output/demo",
+            "binaryArgs": []
+        }
+    ]
+}
