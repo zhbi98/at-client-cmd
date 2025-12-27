@@ -24,9 +24,9 @@ void wifi_close(void);
 static void at_error(at_response_t *);
 static void at_debug(const char *fmt, ...);
 void wifi_query_version(void);
-int wifi_ready_handler(at_urc_info_t *info);
-int wifi_connected_handler(at_urc_info_t *info);
-int wifi_disconnected_handler(at_urc_info_t *info);
+static int wifi_ready_handler(at_urc_info_t *info);
+static int wifi_connected_handler(at_urc_info_t *info);
+static int wifi_disconnected_handler(at_urc_info_t *info);
 
 /* Private variables ---------------------------------------------------------*/
 /**

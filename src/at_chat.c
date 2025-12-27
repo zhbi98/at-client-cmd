@@ -22,6 +22,9 @@
  *                             solve the problem of URC matching exception when 
  *                             receiving binary data from the modem.
  * 2023-10-27     roger.luo    Added the function of transparent data transmission.
+ * 2025-10-28     roger.luo    Solve the problem that the command terminator' \n' 
+ *                             exiting transparent transmission is malformed.
+ * 2025-12-20     roger.luo    Optimize AT memory usage statistics.
  ******************************************************************************/
 #include "at_chat.h"
 #include "at_port.h"
@@ -797,11 +800,6 @@ static void resp_recv_process(at_info_t *ai, const char *buf, unsigned int size)
     if (ai->recv_cnt + size >= ai->recv_bufsize) //Receive overflow, clear directly.
         ai->recv_cnt = 0;
 
-    if (size >= ai->recv_bufsize) {
-        size = ai->recv_bufsize;
-        ai->recv_cnt = 0;
-    }
-
     memcpy(ai->recvbuf + ai->recv_cnt, buf, size);    
     ai->recv_cnt += size;
     ai->recvbuf[ai->recv_cnt] = '\0';
@@ -1111,24 +1109,25 @@ void at_work_abort_all(at_obj_t *at)
 static void *at_core_malloc(unsigned int nbytes)
 {
     if (nbytes + at_cur_mem > AT_MEM_LIMIT_SIZE) { //The maximum memory limit has been exceeded.
-        return NULL;    
-    }        
+        return NULL;
+    }
     unsigned long *mem_info = (unsigned long *)at_malloc(nbytes + sizeof(unsigned long));
-    *mem_info    = nbytes;
-    at_cur_mem += nbytes;              //Statistics of current memory usage.
-    if (at_cur_mem > at_max_mem)       //Record maximum memory usage.
-        at_max_mem = at_cur_mem; 
-    return mem_info + 1;    
+    *mem_info = nbytes;
+    at_cur_mem += (nbytes + sizeof(unsigned long) ); //Statistics of current memory usage.
+    if (at_cur_mem > at_max_mem) { //Record maximum memory usage.
+        at_max_mem = at_cur_mem;
+    }
+    return mem_info + 1;
 }
 
 static void  at_core_free(void *ptr)
 {
     unsigned long *mem_info = (unsigned long *)ptr;
-    unsigned long nbyte;
+    unsigned long nbytes;
     if (ptr != NULL) {
         mem_info--;
-        nbyte = *mem_info;
-        at_cur_mem -= nbyte;
+        nbytes = *mem_info;
+        at_cur_mem -= (nbytes + sizeof(unsigned long) );
         at_free(mem_info);
     }
 }

@@ -1,12 +1,13 @@
-# AT Command
+# AT-client-cmd
 
-[![License](https://img.shields.io/badge/license-Apache%202-green.svg)](https://gitee.com/moluo-tech/AT-Command/blob/master/LICENSE)
+[![License](https://img.shields.io/badge/license-Apache%202-green.svg)](./LICENSE)
 
 ## Brief
 
-AT command(V2) is an interactive component for managing AT command communication. It is suitable for Modem, WIFI module, Bluetooth and other scenarios that use AT command or ASCII command line communication. It covers most forms of AT communication, such as parameter setting, query, binary data sending, etc. It also supports interactive management of custom commands. Since each command request is asynchronous, it is also supported for non-operating system environments. Compared to the V1 version, the new version has a lot of optimization in command reception matching, URC variable length data capture, and memory security, allowing it to handle more complex product applications.
+AT-client-cmd is an interactive component for managing AT command communication. It is suitable for Modem, WIFI module, Bluetooth and other scenarios that use AT command or ASCII command line communication. It covers most forms of AT communication, such as parameter setting, query, binary data sending, etc. It also supports interactive management of custom commands. Since each command request is asynchronous, it is also supported for non-operating system environments. Compared to the V1 version, the new version has a lot of optimization in command reception matching, URC variable length data capture, and memory security, allowing it to handle more complex product applications.
 
 ## Feature
+
 - All command requests are asynchronous and can be run without an operating system.
 - Supports single-line commands, batch commands, variable-parameter commands, and user-defined AT commands.
 - Supports command response timeout, error retransmission, and priority management.
@@ -18,6 +19,7 @@ AT command(V2) is an interactive component for managing AT command communication
 ## System Requirements
 
 In order for AT commands to communicate properly, the target system must meet the following requirements：
+
 - Dynamic memory support.
 - RAM resource: At least 1KB (depending on the Settings of the receive buffer and URC buffer). It is recommended for systems that can allocate more than 3KB of memory.
 - Compiler: The system uses some C99 features (flexible arrays, inline), so the compiler needs to enable C99 support. For IAR, GCC they are turned on by default, while Keil MDK requires manual addition of compilation options (--c99 --gnu).
@@ -27,6 +29,7 @@ In order for AT commands to communicate properly, the target system must meet th
 The V1 version is divided into two modules, "at" module is only suitable for operating in the OS environment, while "at_chat" module is suitable for operating in the environment without an operating system. It adopts the way of pre-allocated memory to manage AT requests, and does not require dynamic memory support, which also limits its application scope. It also runs on the OS, but the support is not perfect. V2 version mainly optimizes the "at_chat" module as a whole, supports URC function, and also strengthens the support for OS environment. Since it uses dynamic memory to manage AT command requests, it has higher requirements on RAM resources, but it is more convenient to use.
 
 ### How to choose
+
 If the platform RAM resources used (such as 8-bit microcontrollers) are limited and only used for simple AT communication, the V1 version is appropriate, while the V2 version is recommended if the RAM resources are sufficient.
 
 ## Getting Started
@@ -50,6 +53,7 @@ static const at_adapter_t at_adapter = {
 ```
 
 ### 2. Use the AT adapter to create an AT communication object
+
 ```c
     at_obj_t *at_obj;
     //....
@@ -61,6 +65,7 @@ static const at_adapter_t at_adapter = {
 ```
 
 ### 3. Add a scheduled polling task
+
 ```c
 /**
  * @brief Polling handler
@@ -74,8 +79,8 @@ void at_device_process(void)
         at_obj_process(&at_obj);
     }    
 }
-
 ```
+
 ### 4. Send the AT command
 
 After completing the above steps, you can run the AT command to request. The following uses querying the signal quality of the MODEM as an example to demonstrate how to send the AT command and parse the response content.
@@ -83,17 +88,14 @@ After completing the above steps, you can run the AT command to request. The fol
 **The command format is as follows:**
 
 ```shell
-
 =>  AT+CSQ
 <=  +CSQ: <rssi>，<ber>
 <=  OK
-
 ```
 
 **Code:**
 
 ```C
-
 /**
  * @brief  Command response handler
  */
@@ -117,12 +119,13 @@ static void read_csq(void)
 {
     at_send_singlline(at_obj， csq_respose_callback， 1000， 0， "AT+CSQ"); 
 }
-
 ```
+
 **Here is a rendering of it running on the M169 WIFI (example:`at_chat/samples/none_os`)**
 ![wifi](images/../docs/images/wifi.png)
 
 ## More cases
+
 For more application examples, check out the directory 'at_chat/samples', which provides examples of several typical platforms.
 
 Take Linux as an example. You can run the AT communication emulator by running the following command:
@@ -167,10 +170,13 @@ Device power on event detected!
 
 Following the command line prompts, enter the serial number and press enter to verify the corresponding use case.
 
-
 **For more detailed instructions, please refer to:**
 
-- [Introduction](http://moluo-tech.gitee.io/at-command/#/README.md)
-- [Quick Start Guide](http://moluo-tech.gitee.io/at-command/#/quickStart.m)
-- [Advanced course](http://moluo-tech.gitee.io/at-command/#/Expert.md)
-- [Platform porting](http://moluo-tech.gitee.io/at-command/#/Porting.md)
+- [Introduction](./docs/README.md)
+- [Quick Start Guide](./docs/quickStart.md)
+- [Advanced course](./docs/Expert.md)
+- [Platform porting](./docs/Porting.md)
+
+**Note:**
+
+When in use, specify the prefix and suffix of the response for the device AT command (if the correct prefix and suffix are not specified, an exception may occur when parsing the AT command response). AT-client-cmd relies on them to split the data frames to avoid parsing errors. For details, see: [The role of command parsing prefix/suffix](https://blog.csdn.net/LiaRonBob/article/details/106518930)
