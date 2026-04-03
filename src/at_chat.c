@@ -237,7 +237,7 @@ static void recvbuf_clear(at_env_t *env)
 
 static char *find_substr(at_env_t *env, const char *str)
 {
-    return strstr(obj_map(env->obj)->recvbuf, str);
+    return strstr(obj_map(env->obj)->recvbuf, str ? str : "");
 }
 
 /**
@@ -514,12 +514,12 @@ static int do_cmd_handler(at_info_t *ai)
             ai->match_len = ai->recv_cnt;
             //Matching response content prefix.
             if ( !(ai->match_mask & MATCH_MASK_PREFIX) ) {
-                ai->prefix = strstr(ai->recvbuf, attr->prefix);
+                ai->prefix = strstr(ai->recvbuf, attr->prefix ? attr->prefix : "");
                 ai->match_mask |= ai->prefix ? MATCH_MASK_PREFIX : 0x00;
             } 
             //Matching response content suffix.
             if ( ai->match_mask & MATCH_MASK_PREFIX ) {
-                ai->suffix = strstr(ai->prefix ? ai->prefix : ai->recvbuf, attr->suffix);
+                ai->suffix = strstr(ai->prefix ? ai->prefix : ai->recvbuf, attr->suffix ? attr->suffix : "");
                 ai->match_mask |= ai->suffix ? MATCH_MASK_SUFFIX : 0x00;
             }
             ai->match_mask |= strstr(ai->recvbuf, AT_DEF_RESP_ERR) ? MATCH_MASK_ERROR : 0x00;
@@ -680,7 +680,7 @@ const urc_item_t *find_urc_item(at_info_t *ai, char *urc_buf, unsigned int size)
     const urc_item_t *tbl = ai->urc_tbl;
     int i;
     for (i = 0; i < ai->urc_tbl_size && tbl; i++, tbl++) {
-       if (strstr(urc_buf, tbl->prefix))//It will need to be further optimized in the future.
+       if (strstr(urc_buf, tbl->prefix ? tbl->prefix : ""))//It will need to be further optimized in the future.
             return tbl;  
     }
     return NULL;
